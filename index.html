@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คลังข้อสอบ: วิวัฒนาการนาฏศิลป์ไทย (100 ข้อ)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-paper: #FDFBF7; 
+            --line-color: #E2DDD3;
+            --pen-red: #D32F2F;
+            --pen-green: #388E3C;
+            --pen-blue: #1976D2;
+            --pen-black: #2C2C2C;
+            --primary: #FFB74D;
+        }
+
+        body {
+            font-family: 'Mali', cursive;
+            background-color: #E0E0E0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            color: var(--pen-black);
+        }
+
+        .notebook {
+            background-color: var(--bg-paper);
+            width: 100%;
+            max-width: 950px;
+            min-height: 90vh;
+            border-radius: 12px;
+            box-shadow: -10px 10px 30px rgba(0,0,0,0.15);
+            padding: 40px 60px;
+            position: relative;
+            background-image: linear-gradient(var(--line-color) 1px, transparent 1px);
+            background-size: 100% 40px;
+            line-height: 40px;
+            font-size: 18px;
+        }
+
+        .notebook::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50px;
+            width: 2px;
+            background-color: #FF8A80;
+        }
+
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 3px dashed #CCC;
+            padding-bottom: 15px;
+            background: var(--bg-paper); 
+        }
+
+        .tab-btn {
+            font-family: 'Mali', cursive;
+            background: white;
+            border: 2px solid var(--pen-black);
+            border-radius: 25px;
+            padding: 8px 18px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            box-shadow: 2px 2px 0px var(--pen-black);
+            transition: 0.2s;
+        }
+
+        .tab-btn:hover, .tab-btn.active {
+            background-color: var(--primary);
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+
+        .red { color: var(--pen-red); font-weight: bold; }
+        .green { color: var(--pen-green); font-weight: bold; }
+        .blue { color: var(--pen-blue); font-weight: bold; }
+
+        /* ระบบคีย์เวิร์ดกดดูความหมายได้ */
+        .clickable-kw {
+            border-bottom: 2px dashed var(--pen-blue);
+            cursor: pointer;
+            position: relative;
+            background-color: rgba(25, 118, 210, 0.1);
+            border-radius: 4px;
+            padding: 0 4px;
+            transition: 0.2s;
+        }
+        .clickable-kw:hover { background-color: rgba(25, 118, 210, 0.2); }
+
+        #kw-tooltip {
+            display: none;
+            position: absolute;
+            background: #FFFDE7;
+            border: 2px solid var(--pen-black);
+            padding: 12px 15px;
+            border-radius: 10px;
+            box-shadow: 4px 4px 0 var(--pen-black);
+            z-index: 100;
+            max-width: 280px;
+            font-size: 16px;
+            line-height: 1.4;
+            transform: translate(-50%, -110%);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+        }
+        th, td { border: 1px solid var(--line-color); padding: 12px; line-height: 1.4; }
+        th { background-color: var(--primary); }
+
+        /* Flashcard */
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 550px;
+            height: 320px;
+            margin: 20px auto;
+        }
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        .flashcard.is-flipped { transform: rotateY(180deg); }
+        .card-face {
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+            background: white; border: 3px solid var(--pen-black); border-radius: 20px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 30px; box-sizing: border-box; box-shadow: 6px 6px 0px var(--pen-black);
+            text-align: center; line-height: 1.4;
+        }
+        .card-back { background-color: #E8F5E9; transform: rotateY(180deg); }
+        
+        /* Multiple Choice Styles */
+        .choice-btn {
+            font-family: 'Mali', cursive;
+            display: block; width: 100%; margin-bottom: 12px; padding: 15px; font-size: 18px;
+            background: white; border: 2px solid var(--pen-black); border-radius: 12px;
+            cursor: pointer; text-align: left; transition: 0.2s; line-height: 1.3;
+        }
+        .choice-btn:hover:not(:disabled) { background: #FFF3E0; transform: translateX(5px); }
+        .choice-btn.correct { background: var(--pen-green); color: white; border-color: var(--pen-green); }
+        .choice-btn.wrong { background: var(--pen-red); color: white; border-color: var(--pen-red); }
+        .choice-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+        
+        .explanation-box {
+            display: none; background: #FFF3E0; border-left: 6px solid #FF9800;
+            padding: 15px 20px; margin-top: 20px; border-radius: 8px; line-height: 1.5;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .timer-box { font-size: 35px; color: var(--pen-red); font-weight: bold; text-align: center; margin-bottom: 10px; }
+        .score-box { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 20px; color: var(--pen-blue); }
+        .floating-feedback { position: absolute; font-size: 24px; font-weight: bold; opacity: 0; transition: 0.5s; pointer-events: none; z-index: 50; }
+    </style>
+</head>
+<body onclick="hideTooltip()">
+
+<div id="kw-tooltip"></div>
+
+<div class="notebook">
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('full-text')">📖 เนื้อหาเต็ม</button>
+        <button class="tab-btn" onclick="switchTab('summary')">🎨 สรุป (กดดูความหมายได้)</button>
+        <button class="tab-btn" onclick="switchTab('flashcard')">🃏 Flashcard (พลิกได้)</button>
+        <button class="tab-btn" onclick="switchTab('typing')">⌨️ พิมพ์ตอบ</button>
+        <button class="tab-btn" onclick="switchTab('practice')">📝 โหมดฝึก (100 ข้อ)</button>
+        <button class="tab-btn" onclick="switchTab('game-mode')">🔥 เกม Speedrun</button>
+    </div>
+
+    <div id="full-text" class="content-section active">
+        <h2 style="text-align: center; color: var(--pen-blue);">วิวัฒนาการของนาฏศิลป์และการละครของไทย</h2>
+        <p>การแสดงนาฏศิลป์และละครไทยมีความผูกพันกับคนไทยมานาน การแสดงเหล่านี้มีจุดเริ่มต้นจากการที่มนุษย์หากิจกรรมทำในยามว่างจากการทำงาน หรือใช้เพื่อการละเล่นในงานต่าง ๆ ใช้เพื่อบูชาสิ่งศักดิ์สิทธิ์ด้วยการร่ายรำ ร้องเพลง และบรรเลงดนตรี ซึ่งวิวัฒนาการของนาฏศิลป์และการละครไทยตั้งแต่อดีตจนถึงปัจจุบัน มีดังนี้</p>
+        
+        <p><span class="blue">สมัยน่านเจ้า:</span><br>
+        สันนิษฐานจากหลักฐานว่า "มโนราห์" เป็นละครเรื่องแรกของไทย เกิดการแสดงระบำต่าง ๆ เช่น ระบำหมวก ระบำนกยูง</p>
+        
+        <p><span class="blue">สมัยสุโขทัย:</span><br>
+        มีการรับศิลปวัฒนธรรมจากชาติที่นิยมอารยธรรมอินเดีย เช่น พม่า มอญ ขอม และละว้า ผสมผสานกับศิลปวัฒนธรรมดั้งเดิมของไทย ทำให้เกิดวิวัฒนาการด้านรำและระบำขึ้น มีการบัญญัติคำเรียกศิลปะการแสดงว่า โขน ละคร ฟ้อนรำ</p>
+        
+        <p><span class="blue">สมัยอยุธยา:</span><br>
+        มีการพัฒนารูปแบบการแสดงละครรำขึ้น ๓ ประเภท ได้แก่ ๑) ละครชาตรี (ของเดิม) ๒) ละครนอกปรับปรุงจากละครชาตรี และ ๓) ละครใน (ละครผู้หญิง) บทละครที่ใช้แสดงในสมัยนี้ เช่น อิเหนา รามเกียรติ์ อุณรุท มโนราห์ สังข์ทอง การะเกด คาวี ไชยเชษฐ์ มณีพิชัย</p>
+        
+        <p><span class="blue">สมัยกรุงธนบุรี:</span><br>
+        ทรงโปรดให้ละครผู้หญิงมาแสดงในงานสมโภช และให้ตัวละครต่าง ๆ เป็นครูฝึกหัดละครหลวง ทรงพระราชนิพนธ์บทละครเรื่อง รามเกียรติ์ขึ้น ๔ ตอน ได้แก่ ตอนพระมงกุฎประลองศร หนุมานเกี้ยวนางวานริน ท้าวมาลีวราชว่าความ และทศกัณฐ์ตั้งพิธีทรายกรด (เผารูปเทวดา)</p>
+        
+        <p><span class="blue">สมัยรัตนโกสินทร์:</span><br>
+        <b>- รัชกาลที่ ๑</b> มีการรวบรวมตำราฟ้อนรำและเขียนภาพรำแม่บท ปรับปรุงระบำสี่บทเป็นระบำมาตรฐาน ทรงฟื้นฟูนาฏศิลป์ และการละครโดยให้มีการฝึกหัดโขนและละครหลวงทั้งวัง ทรงพระราชนิพนธ์บทละครขึ้น ๔ เรื่อง ได้แก่ อุณรุท รามเกียรติ์ ดาหลัง และอิเหนา<br>
+        <b>- รัชกาลที่ ๒</b> เป็นยุคทองของวรรณคดี ทรงพระราชนิพนธ์บทละครใน ได้แก่ เรื่อง อิเหนาขึ้นใหม่ตลอดเรื่อง และเรื่อง รามเกียรติ์บางตอน บทละครนอก ได้แก่ ไกรทอง คาวี ไชยเชษฐ์ สังข์ทอง และมณีพิชัย<br>
+        <b>- รัชกาลที่ ๓</b> มีการยกเลิกละครหลวง ทำให้เกิดคณะละครของเจ้านายและขุนนางขึ้นอย่างมากมาย<br>
+        <b>- รัชกาลที่ ๔</b> ทรงโปรดให้มีละครหลวงขึ้น อนุญาตให้ฝึกหัดละครผู้หญิงได้ จัดตั้งภาษีมหรสพเรียกว่า ภาษีโขนละคร ทรงพระราชนิพนธ์บทละครขึ้นหลายเรื่อง เช่น รามเกียรติ์ ตอนพระรามเดินดง บทเบิกโรงเรื่อง นารายณ์ปราบมนทก พระรามเข้าสวนพระพิราพ บทระบำและบทเบิกโรงต้นไม้เงินทอง<br>
+        <b>- รัชกาลที่ ๕</b> ทรงฟื้นฟูนาฏศิลป์และละคร โดยให้ครูละครหลวงร่วมกันแสดงละครเรื่องสังข์ทอง และอิเหนาเป็นแบบแผน สนับสนุนเจ้านายและเอกชนให้จัดตั้งคณะละครขึ้นมากมาย มีการเก็บค่าเข้าชมครั้งแรกในโรงละครปรินซ์เธียเตอร์ เปลี่ยนละครหลวงนฤมิตรเป็นการแสดงละครร้อง และเปลี่ยนชื่อเป็นละครปรีดาลัยตามชื่อโรงละคร<br>
+        <b>- รัชกาลที่ ๖</b> มีการจัดตั้งกรมมหรสพขึ้น เกิดโขนบรรดาศักดิ์ (มหาดเล็กแสดง) และโขนเชลยศักดิ์ (ประชาชนทั่วไปแสดง) จัดตั้งโรงเรียนฝึกหัดศิลปะโขน ละคร และดนตรีปี่พาทย์ขึ้นมากมาย ทรงพระราชนิพนธ์บทละครนอกหลายเรื่อง เช่น พระร่วง ท้าวแสนปม ศกุนตลา มีการปรับปรุงวิธีการแสดงโขนให้แสดงบนเวที แบบละครดึกดำบรรพ์ และทรงพระราชนิพนธ์บทเบิกโรงเรื่อง ดึกดำบรรพ์ ๔ เรื่อง มีการจัดพิมพ์ตำราฟ้อนรำมีภาพประกอบ และทรงเป็นผู้กำเนิดละครพูด<br>
+        <b>- รัชกาลที่ ๗</b> มีการให้ยุบกรมมหรสพ ย้ายไปสังกัดกรมศิลปากร<br>
+        <b>- รัชกาลที่ ๘</b> มีการก่อตั้ง “วิทยาลัยนาฏศิลป” เป็นสถาบันการสอนศิลปะการแสดงโขน ละคร ดนตรี ปี่พาทย์ ควบคู่กับการสอนวิชาสามัญ มีการแสดงละครปลุกใจให้รักชาติ เรียกว่า ละครหลวงวิจิตรวาทการ เช่น เลือดสุพรรณ พระเจ้ากรุงธน ในช่วงสงครามประชาชนนิยมเล่นรำโทน ซึ่งต่อมากรมศิลปากรได้ปรับปรุงเป็นรำวงมาตรฐาน<br>
+        <b>- รัชกาลที่ ๙</b> ทรงโปรดให้บันทึกภาพยนตร์สีส่วนพระองค์ มีการบันทึกท่ารำองค์พระพิราพ ท่ารำเพลงหน้าพาทย์ และโปรดเกล้าฯ ให้มีการจัดพิธีไหว้ครูแก่ศิลปินกรมศิลปากร มีการจัดแสดงละครแนวต่าง ๆ ทั้งละครเวทีและละครที่แพร่ภาพผ่านสื่อต่าง ๆ โดยมีการนำเทคโนโลยีมาใช้ในการแสดง และกำหนดให้วันที่ ๒๔ กุมภาพันธ์ ของทุกปี เป็นวันศิลปินแห่งชาติ<br>
+        <b>- รัชกาลที่ ๑๐</b> ทรงสนับสนุน ส่งเสริม รักษา และต่อยอดจากรัชกาลที่ ๙ ทรงโปรดให้มีการจัดแสดงนาฏศิลป์ โขน ละคร ระบำ รำ ในโอกาสต่าง ๆ เช่น การแสดงโขนพระราชทานในโอกาสสำคัญต่าง ๆ ให้ประชาชนทั่วไปได้ชม เช่น การแสดงระบำสี่ภาค ณ พระลานพระราชวังดุสิต การแสดงละครเรื่อง เงาะป่า ในงานอุ่นไอรัก คลายความหนาว ณ เวทีใหญ่ ภายในสนามเสือป่า พระราชวังดุสิต</p>
+
+        <p><span class="blue">รูปแบบปัจจุบัน:</span><br>
+        นาฏศิลป์กระบวนท่ารำยังคงรูปแบบมาตรฐานเดิม เครื่องแต่งกายยืนเครื่องเดิม แต่อาจมีการนำเทคโนโลยี แสง สี เสียง มาใช้ประกอบ หรือประดิษฐ์ท่ารำที่เข้ากับเหตุการณ์ปัจจุบัน การละครไทยส่วนใหญ่เป็น "ละครพูด" ไม่มีการขับร้อง เช่น ละครโทรทัศน์ มีความทันสมัยทั้งเรื่องราว เหตุการณ์ และอุปกรณ์</p>
+    </div>
+
+    <div id="summary" class="content-section">
+        <h2 style="text-align: center;">ตารางสรุป (คลิกที่คีย์เวิร์ดเพื่อดูความหมาย)</h2>
+        <p style="text-align:center; color: gray;">💡 ลองคลิกหรือแตะที่ข้อความที่มีกรอบไฮไลต์ดูสิ!</p>
+        <table>
+            <tr><th>ยุคสมัย</th><th>คีย์เวิร์ดสำคัญที่ต้องจำให้แม่น!</th></tr>
+            <tr><td class="blue">น่านเจ้า</td><td><span class="clickable-kw green" onclick="showKw(event, 'ละครเรื่องแรกของไทยตามข้อสันนิษฐาน เกิดในสมัยน่านเจ้า')">มโนราห์</span> (เรื่องแรก), ระบำหมวก</td></tr>
+            <tr><td class="blue">สุโขทัย</td><td>บัญญัติคำว่า <span class="clickable-kw green" onclick="showKw(event, 'เกิดจากการรับวัฒนธรรมจากชาติที่นิยมอารยธรรมอินเดีย เช่น พม่า มอญ ขอม ละว้า')">"โขน ละคร ฟ้อนรำ"</span></td></tr>
+            <tr><td class="blue">อยุธยา</td><td>ชาตรี, <span class="clickable-kw red" onclick="showKw(event, 'ละครที่ปรับปรุงมาจากละครชาตรี ใช้ผู้ชายแสดงล้วน (ในยุคนั้น)')">นอก (ปรับปรุง)</span>, <span class="clickable-kw red" onclick="showKw(event, 'ละครที่แสดงเฉพาะในวัง ใช้ผู้หญิงล้วน')">ใน (ผู้หญิง)</span></td></tr>
+            <tr><td class="blue">ธนบุรี</td><td>รามเกียรติ์ 4 ตอน (<span class="clickable-kw red" onclick="showKw(event, 'หนึ่งใน 4 ตอนของรามเกียรติ์ที่ ร.ตากสิน ทรงพระราชนิพนธ์')">ทศกัณฐ์ตั้งพิธีทรายกรด</span>)</td></tr>
+            <tr><td class="blue">ร.1</td><td><span class="clickable-kw green" onclick="showKw(event, 'ทรงรวบรวมตำราฟ้อนรำ และปรับปรุงระบำสี่บทเป็นมาตรฐาน')">"ระบำสี่บท"</span> มาตรฐาน</td></tr>
+            <tr><td class="blue">ร.2</td><td><span class="clickable-kw green" onclick="showKw(event, 'ยุคที่มีกวีเอกมากมาย และทรงพระราชนิพนธ์อิเหนาใหม่ตลอดเรื่อง')">ยุคทองของวรรณคดี</span></td></tr>
+            <tr><td class="blue">ร.3</td><td><span class="clickable-kw red" onclick="showKw(event, 'ทำให้เกิดคณะละครของเจ้านายและขุนนางกระจายไปทั่ว')">ยกเลิกละครหลวง</span></td></tr>
+            <tr><td class="blue">ร.4</td><td>ตั้ง <span class="clickable-kw red" onclick="showKw(event, 'ภาษีมหรสพที่ตั้งขึ้นหลังจากทรงฟื้นฟูละครหลวง และอนุญาตให้เอกชนมีละครหญิงได้')">"ภาษีโขนละคร"</span></td></tr>
+            <tr><td class="blue">ร.5</td><td><span class="clickable-kw green" onclick="showKw(event, 'โรงละครปรินซ์เธียเตอร์ เป็นที่แรกที่เก็บค่าเข้าชม')">เก็บค่าดูครั้งแรก</span>, <span class="clickable-kw green" onclick="showKw(event, 'เปลี่ยนละครหลวงนฤมิตรเป็นละครร้องปรีดาลัย')">"ละครร้อง"</span></td></tr>
+            <tr><td class="blue">ร.6</td><td>ตั้งกรมมหรสพ, <span class="clickable-kw green" onclick="showKw(event, 'เป็นรากฐานของละครโทรทัศน์ปัจจุบัน')">ผู้กำเนิดละครพูด</span></td></tr>
+            <tr><td class="blue">ร.7</td><td><span class="clickable-kw red" onclick="showKw(event, 'สั่งยุบแล้วให้ย้ายไปสังกัดกรมศิลปากร')">ยุบกรมมหรสพ</span></td></tr>
+            <tr><td class="blue">ร.8</td><td>ตั้ง <span class="clickable-kw green" onclick="showKw(event, 'สถาบันที่สอนศิลปะการแสดงควบคู่วิชาสามัญ')">วิทยาลัยนาฏศิลป</span>, ละครปลุกใจ (เลือดสุพรรณ)</td></tr>
+            <tr><td class="blue">ร.9</td><td><span class="clickable-kw blue" onclick="showKw(event, 'ตรงกับวันที่ 24 กุมภาพันธ์ ของทุกปี (วันคล้ายวันพระราชสมภพ ร.2)')">24 ก.พ. วันศิลปินแห่งชาติ</span></td></tr>
+            <tr><td class="blue">ร.10</td><td><span class="clickable-kw green" onclick="showKw(event, 'เปิดโอกาสให้ประชาชนทั่วไปได้รับชม เพื่อสืบสานและต่อยอด')">โขนพระราชทาน</span>, งานอุ่นไอรักคลายความหนาว</td></tr>
+        </table>
+    </div>
+
+    <div id="flashcard" class="content-section">
+        <h2 style="text-align: center;">โหมด Flashcard (แตะที่การ์ดเพื่อพลิกกลับไป-มา)</h2>
+        <div style="text-align: center; color: gray;" id="fc-counter"></div>
+        
+        <div class="flashcard-container" onclick="toggleActiveCard()">
+            <div class="flashcard" id="fc-element">
+                <div class="card-face card-front">
+                    <h3 id="fc-q" style="font-size: 22px;">...</h3>
+                    <p style="font-size: 14px; color: gray; margin-top: 30px;">(คลิกเพื่อพลิกดูเฉลย)</p>
+                </div>
+                <div class="card-face card-back">
+                    <h3 id="fc-a" class="green" style="font-size: 24px;">...</h3>
+                    <p style="font-size: 14px; color: gray; margin-top: 20px;">(คลิกอีกครั้งเพื่อพลิกกลับ)</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="fc-controls" style="display: none; justify-content: center; gap: 15px; margin-top: 20px;">
+            <button class="tab-btn" style="background: var(--pen-red); color: white;" onclick="markCard(false, event)">❌ ยังจำไม่ได้</button>
+            <button class="tab-btn" style="background: var(--pen-green); color: white;" onclick="markCard(true, event)">✅ จำได้แล้ว</button>
+        </div>
+        <div style="text-align: center; margin-top: 20px;"><button class="tab-btn" onclick="startFlashcard()">🔄 เริ่มกองใหม่</button></div>
+    </div>
+
+    <div id="typing" class="content-section">
+        <h2 style="text-align: center;">โหมดพิมพ์คีย์เวิร์ด</h2>
+        <div class="flashcard-container" style="height: auto; padding: 30px; background: white; border: 3px solid var(--pen-black); border-radius: 20px;">
+            <h3 id="type-q" style="text-align: center; font-size: 20px;">...</h3>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: center;">
+            <input type="text" id="type-input" placeholder="พิมพ์คีย์เวิร์ดคำตอบ..." onkeypress="if(event.key === 'Enter') checkTyping()" style="font-family:'Mali'; width:50%; padding:10px; border-radius:10px; border:2px solid var(--pen-black);">
+            <button class="tab-btn" style="background: var(--pen-black); color: white;" onclick="checkTyping()">ตอบปึ้ง!</button>
+        </div>
+        <div id="type-feedback" style="font-weight: bold; text-align: center; margin-top: 15px; font-size: 22px;"></div>
+        <div style="text-align: center; margin-top: 20px;"><button class="tab-btn" onclick="nextTypeQ()">ข้าม</button></div>
+    </div>
+
+    <div id="practice" class="content-section">
+        <h2 style="text-align: center;">📝 โหมดฝึกทำข้อสอบ (จัดเต็ม 100 ข้อ)</h2>
+        <p style="text-align: center; color: gray;">ค่อยๆ คิด เลือกตอบแล้วระบบจะอธิบายเหตุผลให้ฟัง (ระบบจะสุ่มช้อยส์หลอกให้เอง)</p>
+        
+        <div style="background: white; padding: 25px; border-radius: 12px; border: 2px solid var(--pen-black);">
+            <div id="prac-counter" style="text-align: right; color: gray; font-weight: bold; margin-bottom: 10px;">ข้อ 1 / 100</div>
+            <h3 id="prac-q" style="margin-top: 0; font-size: 20px; line-height: 1.5;">...</h3>
+            <div id="prac-choices" style="margin-top: 20px;"></div>
+        </div>
+        
+        <div id="prac-explanation" class="explanation-box"></div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="prac-next-btn" class="tab-btn" style="display: none; font-size: 18px; padding: 10px 30px;" onclick="nextPracQ()">ข้อถัดไป ➡️</button>
+        </div>
+    </div>
+
+    <div id="game-mode" class="content-section">
+        <div id="game-setup" style="text-align: center; margin: 30px 0; background: white; padding: 30px; border-radius: 15px; border: 2px solid var(--pen-black);">
+            <h2>🔥 Survival Speedrun (100 ข้อ)</h2>
+            <p class="red">กติกา: ตอบถูกบวกเวลา (+3 วิ) | ตอบผิดโดนหักเวลา (-5 วิ) ตอบปุ๊บเปลี่ยนข้อปั๊บ!</p>
+            <label>เลือกเวลาตั้งต้น: </label>
+            <select id="time-selector" style="font-family: 'Mali'; font-size: 16px; padding: 5px; border-radius: 8px;">
+                <option value="30">30 วินาที (ฮาร์ดคอร์)</option>
+                <option value="60" selected>60 วินาที (มาตรฐาน)</option>
+                <option value="120">120 วินาที (สายฟาร์ม)</option>
+            </select>
+            <br><br>
+            <button class="tab-btn" style="background: var(--pen-red); color: white; font-size: 22px;" onclick="startGame()">เริ่มลุย!</button>
+        </div>
+
+        <div id="game-play" style="display: none; position: relative;">
+            <div class="timer-box" id="game-timer">00:00</div>
+            <div class="score-box" id="game-score">ตอบถูกติดกัน: 0 ข้อ</div>
+            <span id="floating-text" class="floating-feedback"></span>
+            
+            <div style="background: white; padding: 25px; border-radius: 12px; border: 2px solid var(--pen-black);">
+                <h3 id="game-q" style="margin-top: 0; text-align: center; font-size: 20px;">...</h3>
+                <div id="game-choices" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ==========================================
+    // ฐานข้อมูลข้อสอบ 100 ข้อ (อัดแน่นจัดเต็ม)
+    // ==========================================
+    const rawQA = [
+        // หมวด 1: ใคร ทำอะไร สมัยไหน
+        { q: "มูลเหตุดั้งเดิมที่สุดที่ทำให้มนุษย์เริ่มมีการแสดงนาฏศิลป์คืออะไร?", a: "การหากิจกรรมทำในยามว่าง / ใช้บูชาสิ่งศักดิ์สิทธิ์", kw: ["ยามว่าง", "บูชา"] },
+        { q: "ชาติใดบ้างที่เป็นตัวกลางนำอารยธรรมอินเดียเข้ามาผสมผสานกับไทย?", a: "พม่า มอญ ขอม ละว้า", kw: ["พม่า", "มอญ", "ขอม", "ละว้า"] },
+        { q: "ละครเรื่องแรกของไทยตามหลักฐานคือเรื่องใด?", a: "มโนราห์", kw: ["มโนราห์"] },
+        { q: "มโนราห์ ระบำหมวก ระบำนกยูง จัดเป็นนาฏศิลป์ที่เกิดขึ้นในยุคใด?", a: "สมัยน่านเจ้า", kw: ["น่านเจ้า"] },
+        { q: "คำว่า 'โขน ละคร ฟ้อนรำ' ถูกบัญญัติขึ้นใช้ครั้งแรกในสมัยใด?", a: "สมัยสุโขทัย", kw: ["สุโขทัย"] },
+        { q: "ละครรำ 3 ประเภท (ชาตรี, นอก, ใน) พัฒนาขึ้นจนชัดเจนในสมัยใด?", a: "สมัยอยุธยา", kw: ["อยุธยา"] },
+        { q: "ละครชาตรี แตกต่างจาก ละครนอก อย่างไร?", a: "ละครชาตรีคือของเดิม ละครนอกคือการนำชาตรีมาปรับปรุง", kw: ["ของเดิม", "ปรับปรุง"] },
+        { q: "บทละครเรื่อง การะเกด คาวี ไชยเชษฐ์ มีจุดเริ่มต้นการแสดงในสมัยใด?", a: "สมัยอยุธยา", kw: ["อยุธยา"] },
+        { q: "ข้อจำกัดของ 'ละครใน' สมัยอยุธยาคืออะไร?", a: "ใช้ผู้หญิงแสดงล้วน", kw: ["ผู้หญิง"] },
+        { q: "กษัตริย์พระองค์ใดทรงให้ตัวละครหญิงมาเป็นครูฝึกหัดละครหลวง?", a: "พระเจ้าตากสินมหาราช (กรุงธนบุรี)", kw: ["ตากสิน", "ธนบุรี"] },
+        { q: "รามเกียรติ์ ตอน 'พระมงกุฎประลองศร' ถูกแต่งขึ้นในสมัยใด?", a: "สมัยกรุงธนบุรี", kw: ["ธนบุรี"] },
+        { q: "หากข้อสอบถามถึงตอน 'ทศกัณฐ์ตั้งพิธีทรายกรด' ต้องตอบยุคใด?", a: "สมัยกรุงธนบุรี", kw: ["ธนบุรี"] },
+        { q: "รามเกียรติ์ฉบับกรุงธนบุรี มีการแต่งขึ้นทั้งหมดกี่ตอน?", a: "4 ตอน", kw: ["4"] },
+        { q: "กษัตริย์ที่ทรงรวบรวมตำราฟ้อนรำและเขียนภาพรำแม่บทคือใคร?", a: "รัชกาลที่ 1", kw: ["ร.1"] },
+        { q: "ระบำมาตรฐานที่ปรับปรุงขึ้นในสมัย ร.1 เรียกว่าอะไร?", a: "ระบำสี่บท", kw: ["สี่บท"] },
+        { q: "อุณรุท และ ดาหลัง เป็นบทละครที่พระราชนิพนธ์ขึ้นในสมัยใด?", a: "รัชกาลที่ 1", kw: ["ร.1"] },
+        { q: "ยุคใดที่ข้อสอบมักเรียกว่า 'ยุคทองของวรรณคดี'?", a: "รัชกาลที่ 2", kw: ["ร.2"] },
+        { q: "บทละครในเรื่องใดที่ ร.2 ทรงพระราชนิพนธ์ 'ขึ้นใหม่ตลอดทั้งเรื่อง'?", a: "อิเหนา", kw: ["อิเหนา"] },
+        { q: "ไกรทอง เป็นบทละครประเภทใด และโดดเด่นในสมัยใคร?", a: "ละครนอก สมัยรัชกาลที่ 2", kw: ["นอก", "ร.2"] },
+        { q: "สมัยใดที่การละครหลวงซบเซาที่สุดเพราะถูกยกเลิก?", a: "รัชกาลที่ 3", kw: ["ร.3"] },
+        { q: "ผลกระทบจากการ 'ยกเลิกละครหลวง' ใน ร.3 คืออะไร?", a: "เกิดคณะละครของเจ้านายและขุนนางกระจายไปทั่ว", kw: ["เจ้านาย", "ขุนนาง"] },
+        { q: "รัชกาลใดกลับมา 'ฟื้นฟู' ละครหลวงอีกครั้ง และอนุญาตให้คน

@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คลังข้อสอบ: วิวัฒนาการนาฏศิลป์ไทย</title>
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-paper: #FDFBF7; /* สีเหลืองนวลละมุนขึ้น */
+            --line-color: #E2DDD3;
+            --pen-red: #D32F2F;
+            --pen-green: #388E3C;
+            --pen-blue: #1976D2;
+            --pen-black: #2C2C2C;
+            --primary: #FFB74D;
+        }
+
+        body {
+            font-family: 'Mali', cursive;
+            background-color: #E0E0E0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            color: var(--pen-black);
+        }
+
+        .notebook {
+            background-color: var(--bg-paper);
+            width: 100%;
+            max-width: 900px;
+            min-height: 90vh;
+            border-radius: 12px;
+            box-shadow: -10px 10px 30px rgba(0,0,0,0.15);
+            padding: 40px 60px;
+            position: relative;
+            background-image: linear-gradient(var(--line-color) 1px, transparent 1px);
+            background-size: 100% 40px;
+            line-height: 40px;
+            font-size: 18px;
+        }
+
+        /* สันสมุดห่วงด้านซ้าย */
+        .notebook::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50px;
+            width: 2px;
+            background-color: #FF8A80;
+        }
+
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 3px dashed #CCC;
+            padding-bottom: 15px;
+            background: var(--bg-paper); /* บังเส้นบรรทัด */
+        }
+
+        .tab-btn {
+            font-family: 'Mali', cursive;
+            background: white;
+            border: 2px solid var(--pen-black);
+            border-radius: 25px;
+            padding: 8px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 2px 2px 0px var(--pen-black);
+            transition: 0.2s;
+        }
+
+        .tab-btn:hover, .tab-btn.active {
+            background-color: var(--primary);
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+
+        .red { color: var(--pen-red); font-weight: bold; }
+        .green { color: var(--pen-green); font-weight: bold; }
+        .blue { color: var(--pen-blue); font-weight: bold; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+        }
+        th, td { border: 1px solid var(--line-color); padding: 12px; line-height: 1.4; }
+        th { background-color: var(--primary); }
+
+        /* --- 3D Flashcard --- */
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            margin: 20px auto;
+        }
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        .flashcard.is-flipped { transform: rotateY(180deg); }
+        
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            background: white;
+            border: 3px solid var(--pen-black);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            box-sizing: border-box;
+            box-shadow: 6px 6px 0px var(--pen-black);
+            text-align: center;
+            line-height: 1.4;
+        }
+        .card-front { background-color: #FFF; }
+        .card-back { background-color: #E8F5E9; transform: rotateY(180deg); }
+        
+        .action-btns {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        /* --- โหมดเกม --- */
+        .game-setup { text-align: center; margin: 30px 0; background: white; padding: 20px; border-radius: 15px; border: 2px solid var(--pen-black); }
+        .time-select { font-family: 'Mali', cursive; font-size: 18px; padding: 5px; border-radius: 8px; }
+        .timer { font-size: 30px; color: var(--pen-red); font-weight: bold; text-align: center; margin-bottom: 20px;}
+        .choice-btn {
+            font-family: 'Mali', cursive;
+            display: block;
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 15px;
+            font-size: 18px;
+            background: white;
+            border: 2px solid var(--pen-black);
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: 0.2s;
+        }
+        .choice-btn:hover { background: #F5F5F5; }
+        .choice-btn.correct { background: var(--pen-green); color: white; }
+        .choice-btn.wrong { background: var(--pen-red); color: white; }
+        
+        .explanation-box {
+            display: none;
+            background: #FFF3E0;
+            border-left: 5px solid #FF9800;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            line-height: 1.5;
+        }
+
+        /* โหมดพิมพ์ตอบ */
+        .input-group { display: flex; gap: 10px; margin-top: 20px; justify-content: center;}
+        input[type="text"] { font-family: 'Mali'; width: 60%; padding: 12px; border: 2px solid var(--pen-black); border-radius: 10px; font-size: 16px; }
+        .feedback { font-weight: bold; text-align: center; margin-top: 15px; font-size: 22px; }
+
+    </style>
+</head>
+<body>
+
+<div class="notebook">
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('full-text')">📖 เนื้อหา</button>
+        <button class="tab-btn" onclick="switchTab('summary')">🎨 สรุปแยกสี</button>
+        <button class="tab-btn" onclick="switchTab('flashcard')">🃏 Flashcard (Active Recall)</button>
+        <button class="tab-btn" onclick="switchTab('typing')">⌨️ พิมพ์เช็คคีย์เวิร์ด</button>
+        <button class="tab-btn" onclick="switchTab('game-mode')">⏱️ โหมดเกม (ตัดช้อยส์)</button>
+    </div>
+
+    <div id="full-text" class="content-section active">
+        <h2 style="text-align: center; color: var(--pen-blue);">วิวัฒนาการของนาฏศิลป์และการละครของไทย</h2>
+        <p>การแสดงนาฏศิลป์และละครไทยมีความผูกพันกับคนไทยมานาน มีจุดเริ่มต้นจากการที่มนุษย์หากิจกรรมทำในยามว่าง หรือใช้เพื่อการละเล่นในงานต่าง ๆ รวมถึงใช้เพื่อบูชาสิ่งศักดิ์สิทธิ์ด้วยการร่ายรำ ร้องเพลง และบรรเลงดนตรี</p>
+        <p><span class="blue">สมัยน่านเจ้า:</span> สันนิษฐานจากหลักฐานว่า "มโนราห์" เป็นละครเรื่องแรกของไทย เกิดการแสดงระบำต่าง ๆ เช่น ระบำหมวก ระบำนกยูง</p>
+        <p><span class="blue">สมัยสุโขทัย:</span> รับศิลปวัฒนธรรมจากชาติที่นิยมอารยธรรมอินเดีย (พม่า มอญ ขอม ละว้า) เกิดการบัญญัติคำว่า "โขน ละคร ฟ้อนรำ"</p>
+        <p><span class="blue">สมัยอยุธยา:</span> พัฒนาละครรำ ๓ ประเภท คือ ๑) ละครชาตรี (ของเดิม) ๒) ละครนอก (ปรับปรุง) ๓) ละครใน (ผู้หญิง)</p>
+        <p><span class="blue">สมัยกรุงธนบุรี:</span> โปรดให้ละครผู้หญิงแสดงในงานสมโภช ทรงพระราชนิพนธ์รามเกียรติ์ ๔ ตอน (เช่น ทศกัณฐ์ตั้งพิธีทรายกรด)</p>
+        <p><span class="blue">สมัยรัตนโกสินทร์:</span><br>
+        - <b>ร.๑</b>: ปรับปรุง "ระบำสี่บท" เป็นระบำมาตรฐาน<br>
+        - <b>ร.๒</b>: ยุคทองของวรรณคดี พระราชนิพนธ์อิเหนาตลอดเรื่อง<br>
+        - <b>ร.๓</b>: ยกเลิกละครหลวง เกิดคณะละครเจ้านาย/ขุนนาง<br>
+        - <b>ร.๔</b>: ตั้ง "ภาษีโขนละคร"<br>
+        - <b>ร.๕</b>: เก็บค่าดูครั้งแรก, เกิดละครร้อง (ปรีดาลัย)<br>
+        - <b>ร.๖</b>: ตั้งกรมมหรสพ, กำเนิดละครพูด, โขนบรรดาศักดิ์/เชลยศักดิ์<br>
+        - <b>ร.๗</b>: ยุบกรมมหรสพ โอนไปกรมศิลปากร<br>
+        - <b>ร.๘</b>: ตั้งวิทยาลัยนาฏศิลป, รำวงมาตรฐาน<br>
+        - <b>ร.๙</b>: 24 ก.พ. วันศิลปินแห่งชาติ<br>
+        - <b>ร.๑๐</b>: โขนพระราชทาน, งานอุ่นไอรักคลายความหนาว
+        </p>
+    </div>
+
+    <div id="summary" class="content-section">
+        <h2 style="text-align: center;">ตารางสรุป</h2>
+        <table>
+            <tr><th>ยุคสมัย</th><th>คีย์เวิร์ดสำคัญที่ต้องจำให้แม่น!</th></tr>
+            <tr><td class="blue">น่านเจ้า</td><td><span class="green">มโนราห์</span> (เรื่องแรก), ระบำหมวก, นกยูง</td></tr>
+            <tr><td class="blue">สุโขทัย</td><td>บัญญัติคำว่า <span class="green">"โขน ละคร ฟ้อนรำ"</span></td></tr>
+            <tr><td class="blue">อยุธยา</td><td>ละคร 3 ประเภท: ชาตรี, <span class="red">นอก (ปรับปรุง)</span>, <span class="red">ใน (ผู้หญิงล้วน)</span></td></tr>
+            <tr><td class="blue">ธนบุรี</td><td>พระราชนิพนธ์รามเกียรติ์ 4 ตอน (<span class="red">ทศกัณฐ์ตั้งพิธีทรายกรด</span>)</td></tr>
+            <tr><td class="blue">ร.1</td><td>ตั้ง <span class="green">"ระบำสี่บท"</span> เป็นระบำมาตรฐาน</td></tr>
+            <tr><td class="blue">ร.2</td><td><span class="green">ยุคทองของวรรณคดี</span>, แต่งอิเหนาใหม่</td></tr>
+            <tr><td class="blue">ร.3</td><td><span class="red">ยกเลิกละครหลวง</span></td></tr>
+            <tr><td class="blue">ร.4</td><td>ตั้ง <span class="red">"ภาษีโขนละคร"</span></td></tr>
+            <tr><td class="blue">ร.5</td><td>เก็บค่าดูครั้งแรก, กำเนิด <span class="green">"ละครร้อง"</span> (ปรีดาลัย)</td></tr>
+            <tr><td class="blue">ร.6</td><td>ตั้งกรมมหรสพ, <span class="green">ผู้กำเนิดละครพูด</span></td></tr>
+            <tr><td class="blue">ร.7</td><td><span class="red">ยุบกรมมหรสพ</span> โอนไปกรมศิลปากร</td></tr>
+            <tr><td class="blue">ร.8</td><td>ตั้ง <span class="green">วิทยาลัยนาฏศิลป</span>, รำวงมาตรฐาน</td></tr>
+            <tr><td class="blue">ร.9</td><td><span class="blue">24 ก.พ.</span> วันศิลปินแห่งชาติ</td></tr>
+            <tr><td class="blue">ร.10</td><td>โขนพระราชทาน, งานอุ่นไอรักคลายความหนาว</td></tr>
+        </table>
+    </div>
+
+    <div id="flashcard" class="content-section">
+        <h2 style="text-align: center;">โหมด Flashcard (จำไม่ได้ ระบบจะวนมาถามใหม่)</h2>
+        <div style="text-align: center; color: gray;" id="fc-counter">เหลืออีก 0 ข้อในกอง</div>
+        
+        <div class="flashcard-container" onclick="flipActiveCard()">
+            <div class="flashcard" id="fc-element">
+                <div class="card-face card-front">
+                    <span style="position: absolute; top: 15px; left: 15px; font-size: 14px; color: gray;">คำถาม</span>
+                    <h3 id="fc-q" style="font-size: 22px;">...</h3>
+                    <p style="font-size: 14px; color: gray; margin-top: 30px;">(คลิกเพื่อพลิกดูเฉลย)</p>
+                </div>
+                <div class="card-face card-back">
+                    <span style="position: absolute; top: 15px; left: 15px; font-size: 14px; color: gray;">เฉลย</span>
+                    <h3 id="fc-a" class="green" style="font-size: 24px;">...</h3>
+                    <p id="fc-explain" style="font-size: 16px; margin-top: 10px;"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-btns" id="fc-controls" style="display: none;">
+            <button class="tab-btn" style="background: var(--pen-red); color: white;" onclick="markCard(false)">❌ ยังจำไม่ได้</button>
+            <button class="tab-btn" style="background: var(--pen-green); color: white;" onclick="markCard(true)">✅ จำได้แล้วปึ้ง!</button>
+        </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="tab-btn" onclick="startFlashcard()">🔄 เริ่มกองใหม่ / สับไพ่</button>
+        </div>
+    </div>
+
+    <div id="typing" class="content-section">
+        <h2 style="text-align: center;">โหมดพิมพ์ตอบ (ดึงความจำ)</h2>
+        <div class="flashcard-container" style="height: auto; padding: 30px; background: white; border: 3px solid var(--pen-black); border-radius: 20px;">
+            <h3 id="type-q" style="text-align: center;">...</h3>
+        </div>
+        <div class="input-group">
+            <input type="text" id="type-input" placeholder="พิมพ์คีย์เวิร์ดคำตอบ..." onkeypress="if(event.key === 'Enter') checkTyping()">
+            <button class="tab-btn" style="background: var(--pen-black); color: white;" onclick="checkTyping()">ตรวจคำตอบ</button>
+        </div>
+        <div id="type-feedback" class="feedback"></div>
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="tab-btn" onclick="nextTypeQ()">ข้าม / ข้อถัดไป</button>
+        </div>
+    </div>
+
+    <div id="game-mode" class="content-section">
+        <div id="game-setup" class="game-setup">
+            <h2>พร้อมลุยสนามสอบ!</h2>
+            <label>เลือกเวลาทำข้อสอบ: </label>
+            <select id="time-selector" class="time-select">
+                <option value="30">30 วินาที (สายโหด)</option>
+                <option value="60" selected>1 นาที (กำลังดี)</option>
+                <option value="120">2 นาที (เน้นชัวร์)</option>
+            </select>
+            <br><br>
+            <button class="tab-btn" style="background: var(--pen-black); color: white; font-size: 20px;" onclick="startGame()">เริ่มเกม!</button>
+        </div>
+
+        <div id="game-play" style="display: none;">
+            <div class="timer" id="game-timer">00:00</div>
+            <div style="background: white; padding: 20px; border-radius: 12px; border: 2px solid var(--pen-black);">
+                <h3 id="game-q" style="margin-top: 0; text-align: center;">...</h3>
+                <div id="game-choices"></div>
+            </div>
+            
+            <div id="game-explanation" class="explanation-box"></div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button id="next-game-btn" class="tab-btn" style="display: none;" onclick="nextGameQ()">ข้อถัดไป ➡️</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ฐานข้อมูลข้อสอบ (เพิ่มช่อง explanation)
+    const qaData = [
+        { q: "ละครเรื่องแรกของไทยตามข้อสันนิษฐานคือเรื่องใด?", a: "มโนราห์", keywords: ["มโนราห์"], exp: "มโนราห์ เชื่อว่าเกิดในสมัยน่านเจ้า เป็นละครเรื่องแรก" },
+        { q: "ระบำหมวก และ ระบำนกยูง เกิดขึ้นในสมัยใด?", a: "สมัยน่านเจ้า", keywords: ["น่านเจ้า"], exp: "เป็นระบำดั้งเดิมที่พบหลักฐานตั้งแต่สมัยน่านเจ้า" },
+        { q: "การบัญญัติคำว่า 'โขน ละคร ฟ้อนรำ' เกิดขึ้นในสมัยใด?", a: "สมัยสุโขทัย", keywords: ["สุโขทัย"], exp: "สุโขทัยรับวัฒนธรรมจากชาติที่รับอารยธรรมอินเดียมาบัญญัติศัพท์" },
+        { q: "ละครที่ใช้ 'ผู้หญิงล้วน' แสดงในสมัยอยุธยา เรียกว่าอะไร?", a: "ละครใน", keywords: ["ละครใน", "ใน"], exp: "ละครในเล่นเฉพาะในวัง ใช้ผู้หญิงล้วน" },
+        { q: "ตอน 'ทศกัณฐ์ตั้งพิธีทรายกรด' ถูกพระราชนิพนธ์ขึ้นในยุคสมัยใด?", a: "สมัยกรุงธนบุรี", keywords: ["ธนบุรี"], exp: "พระเจ้าตากสินทรงพระราชนิพนธ์รามเกียรติ์ 4 ตอน" },
+        { q: "การปรับปรุง 'ระบำสี่บท' ให้เป็นระบำมาตรฐาน เกิดขึ้นในรัชกาลใด?", a: "รัชกาลที่ 1", keywords: ["ร.1", "1"], exp: "ร.1 ทรงรวบรวมตำราฟ้อนรำและตั้งระบำสี่บทเป็นมาตรฐาน" },
+        { q: "ยุคใดที่ได้รับการยกย่องว่าเป็น 'ยุคทองของวรรณคดี'?", a: "รัชกาลที่ 2", keywords: ["ร.2", "2"], exp: "ร.2 ทรงพระราชนิพนธ์อิเหนาตลอดเรื่อง และมีกวีเอกมากมาย" },
+        { q: "รัชกาลใดที่มีการ 'ยกเลิกละครหลวง'?", a: "รัชกาลที่ 3", keywords: ["ร.3", "3"], exp: "ร.3 ยกเลิกละครหลวง ทำให้เจ้านาย/ขุนนางตั้งคณะละครเอง" },
+        { q: "รัชกาลใดที่มีการตั้ง 'ภาษีโขนละคร'?", a: "รัชกาลที่ 4", keywords: ["ร.4", "4"], exp: "ร.4 ฟื้นฟูละครหลวง และจัดเก็บภาษีมหรสพ" },
+        { q: "กำเนิด 'ละครร้อง' (ปรีดาลัย) เกิดในสมัยใด?", a: "รัชกาลที่ 5", keywords: ["ร.5", "5"], exp: "เปลี่ยนละครหลวงนฤมิตรเป็นละครร้องที่โรงละครปรีดาลัย" },
+        { q: "ใครคือผู้ให้กำเนิด 'ละครพูด'?", a: "รัชกาลที่ 6", keywords: ["ร.6", "6"], exp: "ร.6 ทรงตั้งกรมมหรสพและกำเนิดละครพูดแบบตะวันตก" },
+        { q: "กรมมหรสพ ถูกสั่ง 'ยุบ' โอนไปกรมศิลปากร ในสมัยรัชกาลใด?", a: "รัชกาลที่ 7", keywords: ["ร.7", "7"], exp: "เพื่อประหยัดงบประมาณในสมัย ร.7" },
+        { q: "รำวงมาตรฐาน ปรับปรุงมาจากอะไร ในสมัยใด?", a: "รำโทน สมัย ร.8", keywords: ["รำโทน", "ร.8"], exp: "กรมศิลปากรปรับปรุงรำโทนในช่วงสงครามสมัย ร.8" },
+        { q: "วันศิลปินแห่งชาติ ตรงกับวันที่เท่าไหร่?", a: "24 กุมภาพันธ์", keywords: ["24", "กุมภา"], exp: "กำหนดขึ้นในสมัย ร.9 (ตรงกับวันคล้ายวันพระราชสมภพ ร.2)" },
+        { q: "ละครเรื่อง 'เงาะป่า' จัดแสดงในงานอุ่นไอรัก สมัยรัชกาลใด?", a: "รัชกาลที่ 10", keywords: ["ร.10", "10"], exp: "ร.10 ทรงต่อยอดศิลปวัฒนธรรมให้ประชาชนเข้าถึงง่าย" }
+    ];
+
+    // --- Tab System ---
+    function switchTab(tabId) {
+        document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+        
+        if(tabId === 'flashcard' && deck.length === 0) startFlashcard();
+        if(tabId === 'typing') nextTypeQ();
+    }
+
+    // --- Shuffle Array Helper ---
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    // --- Active Recall Flashcard System ---
+    let deck = [];
+    let currentFCCard = null;
+
+    function startFlashcard() {
+        deck = shuffle([...qaData]); // ก๊อปปี้และสับไพ่
+        document.getElementById('fc-element').classList.remove('is-flipped');
+        document.getElementById('fc-controls').style.display = 'none';
+        nextFlashcard();
+    }
+
+    function nextFlashcard() {
+        if(deck.length === 0) {
+            document.getElementById('fc-q').innerText = "🎉 ยินดีด้วย! จำได้ครบทุกข้อแล้ว";
+            document.getElementById('fc-counter').innerText = "กองไพ่ว่างเปล่า";
+            currentFCCard = null;
+            return;
+        }
+        currentFCCard = deck[0];
+        document.getElementById('fc-q').innerText = currentFCCard.q;
+        document.getElementById('fc-a').innerText = currentFCCard.a;
+        document.getElementById('fc-explain').innerText = currentFCCard.exp;
+        document.getElementById('fc-counter').innerText = `เหลืออีก ${deck.length} ข้อในกอง`;
+        document.getElementById('fc-element').classList.remove('is-flipped');
+        document.getElementById('fc-controls').style.display = 'none';
+    }
+
+    function flipActiveCard() {
+        if(!currentFCCard) return;
+        const cardEl = document.getElementById('fc-element');
+        const isFlipped = cardEl.classList.contains('is-flipped');
+        if(!isFlipped) {
+            cardEl.classList.add('is-flipped');
+            document.getElementById('fc-controls').style.display = 'flex'; // โชว์ปุ่มจำได้/ไม่ได้
+        }
+    }
+
+    function markCard(remembered) {
+        event.stopPropagation(); // กันไม่ให้พลิกการ์ดกลับ
+        if(remembered) {
+            deck.shift(); // ลบออกจากกอง (จำได้แล้ว)
+        } else {
+            let card = deck.shift();
+            deck.push(card); // เอาไปต่อท้ายกอง (ยังจำไม่ได้)
+        }
+        nextFlashcard();
+    }
+
+    // --- Typing Mode ---
+    let typeIndex = 0;
+    let typeDeck = [];
+
+    function nextTypeQ() {
+        if(typeDeck.length === 0) typeDeck = shuffle([...qaData]);
+        document.getElementById('type-q').innerText = typeDeck[typeIndex].q;
+        document.getElementById('type-input').value = "";
+        document.getElementById('type-feedback').innerText = "";
+    }
+
+    function checkTyping() {
+        let input = document.getElementById('type-input').value.trim();
+        if(input === "") return;
+        let card = typeDeck[typeIndex];
+        let isCorrect = card.keywords.some(kw => input.includes(kw));
+        
+        const feedback = document.getElementById('type-feedback');
+        if(isCorrect) {
+            feedback.innerText = "Correct"; // ตามกฎ
+            feedback.className = "feedback green";
+            setTimeout(() => {
+                typeIndex = (typeIndex + 1) % typeDeck.length;
+                nextTypeQ();
+            }, 1000);
+        } else {
+            feedback.innerText = "Incorrect"; // ตามกฎ
+            feedback.className = "feedback red";
+        }
+    }
+
+    // --- Game Mode (Clutch / Elimination) ---
+    let gameTime = 60;
+    let gameTimerInterval;
+    let gameDeck = [];
+    let currentGameCard = null;
+
+    function startGame() {
+        gameTime = parseInt(document.getElementById('time-selector').value);
+        document.getElementById('game-setup').style.display = 'none';
+        document.getElementById('game-play').style.display = 'block';
+        gameDeck = shuffle([...qaData]);
+        updateTimerDisplay();
+        
+        gameTimerInterval = setInterval(() => {
+            gameTime--;
+            updateTimerDisplay();
+            if(gameTime <= 0) endGame();
+        }, 1000);
+
+        loadGameQ();
+    }
+
+    function updateTimerDisplay() {
+        let m = Math.floor(gameTime / 60);
+        let s = gameTime % 60;
+        document.getElementById('game-timer').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+    }
+
+    function loadGameQ() {
+        document.getElementById('game-explanation').style.display = 'none';
+        document.getElementById('next-game-btn').style.display = 'none';
+        
+        if(gameDeck.length === 0) { endGame(true); return; }
+        
+        currentGameCard = gameDeck.pop();
+        document.getElementById('game-q').innerText = currentGameCard.q;
+        
+        // สุ่มช้อยส์ 4 ตัวเลือก
+        let choices = [currentGameCard.a];
+        let pool = shuffle([...qaData]);
+        for(let item of pool) {
+            if(choices.length >= 4) break;
+            if(!choices.includes(item.a)) choices.push(item.a);
+        }
+        choices = shuffle(choices);
+
+        const container = document.getElementById('game-choices');
+        container.innerHTML = "";
+        choices.forEach(choice => {
+            let btn = document.createElement("button");
+            btn.className = "choice-btn";
+            btn.innerText = choice;
+            btn.onclick = () => checkGameAnswer(btn, choice === currentGameCard.a);
+            container.appendChild(btn);
+        });
+    }
+
+    function checkGameAnswer(btn, isCorrect) {
+        // ปิดปุ่มทั้งหมด
+        let buttons = document.querySelectorAll('.choice-btn');
+        buttons.forEach(b => b.disabled = true);
+
+        if(isCorrect) {
+            btn.classList.add('correct');
+            setTimeout(loadGameQ, 800);
+        } else {
+            btn.classList.add('wrong');
+            // ไฮไลต์ข้อถูก
+            buttons.forEach(b => {
+                if(b.innerText === currentGameCard.a) b.classList.add('correct');
+            });
+            // แสดงคำอธิบาย
+            let expBox = document.getElementById('game-explanation');
+            expBox.innerHTML = `<b>เฉลย:</b> ${currentGameCard.a}<br><b>คำอธิบาย:</b> ${currentGameCard.exp}`;
+            expBox.style.display = 'block';
+            document.getElementById('next-game-btn').style.display = 'inline-block';
+            
+            // หักเวลาลงโทษ
+            gameTime -= 5;
+            if(gameTime < 0) gameTime = 0;
+            updateTimerDisplay();
+        }
+    }
+
+    function nextGameQ() { loadGameQ(); }
+
+    function endGame(win = false) {
+        clearInterval(gameTimerInterval);
+        document.getElementById('game-play').innerHTML = `
+            <h2 style="text-align:center;">${win ? '🎉 เก่งมาก! ตอบครบทุกข้อ' : '⏰ หมดเวลา!'}</h2>
+            <div style="text-align:center; margin-top:20px;">
+                <button class="tab-btn" onclick="location.reload()">เริ่มเล่นใหม่</button>
+            </div>
+        `;
+    }
+</script>
+</body>
+</html>
